@@ -1,24 +1,32 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
-//import * as puppeteer from 'puppeteer-core';
-// --- CAMBIO EN LA IMPORTACIÓN ---
-// Usamos 'require' para asegurar la compatibilidad
-const chromium = require('@sparticuz/chrome-aws-lambda');
+import puppeteer from 'puppeteer-core'; // Usamos puppeteer-core
+import chromium from '@sparticuz/chrome-aws-lambda'; // Y la librería que provee el navegador
 import { SolicitudAdopcion } from '../solicitudes-adopcion/schemas/solicitud-adopcion.schema';
 
 @Injectable()
 export class PdfService implements OnModuleDestroy {
-  private browser: any = null;
+  private browser: puppeteer.Browser | null = null;
 
-  // --- MÉTODO DE INICIALIZACIÓN MANUAL ---
-  // Este método será llamado desde main.ts para asegurar que Puppeteer esté listo.
   async init() {
-    console.log('[PdfService] Inicializando instancia de Puppeteer con chrome-aws-lambda...');
-    this.browser = await chromium.puppeteer.launch({ // <-- Usamos chromium.puppeteer
+    console.log('[PdfService] Inicializando instancia de Puppeteer...');
+    
+    // Obtenemos la ruta del ejecutable de Chromium desde la librería
+    const executablePath = await chromium.executablePath;
+
+    // Verificamos si la ruta es válida
+    if (!executablePath) {
+      throw new Error('No se pudo encontrar la ruta del ejecutable de Chromium.');
+    }
+    
+    console.log(`[PdfService] Usando Chromium en la ruta: ${executablePath}`);
+
+    this.browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath,
+      executablePath: executablePath,
       headless: chromium.headless,
     });
+
     console.log('[PdfService] Instancia de Puppeteer lista.');
   }
 
