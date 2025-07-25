@@ -1,5 +1,6 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
-import * as puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chrome-aws-lambda';
 import { SolicitudAdopcion } from '../solicitudes-adopcion/schemas/solicitud-adopcion.schema';
 
 @Injectable()
@@ -9,14 +10,12 @@ export class PdfService implements OnModuleDestroy {
   // --- MÉTODO DE INICIALIZACIÓN MANUAL ---
   // Este método será llamado desde main.ts para asegurar que Puppeteer esté listo.
   async init() {
-    console.log('[PdfService] Inicializando instancia de Puppeteer...');
+    console.log('[PdfService] Inicializando instancia de Puppeteer con chrome-aws-lambda...');
     this.browser = await puppeteer.launch({
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage', // Previene errores en entornos con memoria compartida limitada
-        '--single-process'       // A veces ayuda en entornos restringidos
-      ],
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless,
     });
     console.log('[PdfService] Instancia de Puppeteer lista.');
   }
