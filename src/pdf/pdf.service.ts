@@ -1,6 +1,8 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import * as puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chrome-aws-lambda';
+// --- CAMBIO EN LA IMPORTACIÓN ---
+// Usamos 'require' para asegurar la compatibilidad
+const chromium = require('@sparticuz/chrome-aws-lambda');
 import { SolicitudAdopcion } from '../solicitudes-adopcion/schemas/solicitud-adopcion.schema';
 
 @Injectable()
@@ -12,6 +14,7 @@ export class PdfService implements OnModuleDestroy {
   async init() {
     console.log('[PdfService] Inicializando instancia de Puppeteer con chrome-aws-lambda...');
     this.browser = await puppeteer.launch({
+      // --- CAMBIOS EN LAS OPCIONES ---
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath,
