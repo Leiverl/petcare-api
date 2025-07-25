@@ -11,6 +11,8 @@ export class PdfService implements OnModuleDestroy {
   async init() {
     console.log('[PdfService] Inicializando instancia de Puppeteer...');
     this.browser = await puppeteer.launch({
+      // Le decimos a Puppeteer dónde encontrar el Chrome que instalamos
+      executablePath: '/opt/render/.cache/puppeteer/chrome/linux-121.0.6167.85/chrome',
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     console.log('[PdfService] Instancia de Puppeteer lista.');
