@@ -11,7 +11,12 @@ export class PdfService implements OnModuleDestroy {
   async init() {
     console.log('[PdfService] Inicializando instancia de Puppeteer...');
     this.browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage', // Previene errores en entornos con memoria compartida limitada
+        '--single-process'       // A veces ayuda en entornos restringidos
+      ],
     });
     console.log('[PdfService] Instancia de Puppeteer lista.');
   }
