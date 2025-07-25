@@ -8,8 +8,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // --- AÑADIMOS LA INICIALIZACIÓN EXPLÍCITA ---
-  const pdfService = app.get(PdfService);
-  await pdfService.init(); // Esperamos a que Puppeteer esté listo
+  //const pdfService = app.get(PdfService);
+//await pdfService.init(); // Esperamos a que Puppeteer esté listo
   // ------------------------------------------
 
   // Configurar un prefijo global para todas las rutas (ej: /api/v1/...)

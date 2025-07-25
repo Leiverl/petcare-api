@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as sgMail from '@sendgrid/mail';
+// --- CORRECCIÓN EN LA IMPORTACIÓN ---
+import sgMail from '@sendgrid/mail';
 import { SolicitudAdopcion } from '../solicitudes-adopcion/schemas/solicitud-adopcion.schema';
 
 @Injectable()
@@ -22,7 +23,6 @@ export class EmailService {
 
   async enviarCertificadoAdopcion(solicitud: SolicitudAdopcion, pdfBuffer: Buffer) {
     const adoptante: any = solicitud.adoptante;
-    // --- CORRECCIÓN AQUÍ ---
     const mascota: any = solicitud.mascota;
 
     const msg = {
