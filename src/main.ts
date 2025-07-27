@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { PdfService } from './pdf/pdf.service'; // <-- IMPORTAR
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,6 +20,9 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
 
@@ -35,7 +37,11 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document);
 
   // Habilitar CORS
-  app.enableCors();
+  app.enableCors({
+    origin: true, // Permite que cualquier origen que haga la petición sea aceptado
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
 
   await app.listen(3000);
 
