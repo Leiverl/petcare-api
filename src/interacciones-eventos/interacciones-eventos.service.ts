@@ -7,20 +7,33 @@ import { InteraccionEvento } from './schemas/interaccion-evento.schema';
 export class InteraccionesEventosService {
   constructor(@InjectModel(InteraccionEvento.name) private interaccionModel: Model<InteraccionEvento>) {}
 
-  async addInteres(usuarioId: string, eventoId: string) {
-    // El índice unique en el schema previene duplicados
-    const nuevaInteraccion = new this.interaccionModel({ usuario: usuarioId, evento: eventoId });
-    return nuevaInteraccion.save();
-  }
+  // --- NUEVO MÉTODO UNIFICADO ---
+  async toggleInteres(usuarioId: string, eventoId: string): Promise<{ interesado: boolean }> {
+    const filtro = { usuario: usuarioId, evento: eventoId };
+    
+    const interaccionExistente = await this.interaccionModel.findOne(filtro);
 
-  async removeInteres(usuarioId: string, eventoId: string) {
-    const result = await this.interaccionModel.deleteOne({ usuario: usuarioId, evento: eventoId });
-    if (result.deletedCount === 0) throw new NotFoundException('Interés no encontrado.');
-    return { message: 'Interés eliminado' };
+    if (interaccionExistente) {
+      // Si ya existe, la eliminamos
+      await this.interaccionModel.deleteOne(filtro);
+      return { interesado: false }; // El usuario ya no está interesado
+    } else {
+      // Si no existe, la creamos
+      const nuevaInteraccion = new this.interaccionModel(filtro);
+      await nuevaInteraccion.save();
+      return { interesado: true }; // El usuario ahora está interesado
+    }
   }
 
   async getMisEventos(usuarioId: string) {
-    return this.interaccionModel.find({ usuario: usuarioId }).populate('evento');
+    return this.interaccionModel.find({ usuario: usuarioId })
+      .populate({
+        path: 'evento',
+        populate: {
+          path: 'organizador',
+          select: 'nombre'
+        }
+      });
   }
 
   async getInteresadosPorEvento(eventoId: string) {
