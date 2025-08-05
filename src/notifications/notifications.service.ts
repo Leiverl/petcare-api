@@ -24,8 +24,8 @@ export class NotificationsService {
   }
 
   // MÉTODO PRINCIPAL
-  async createAndSend(payload: { userId: string, title: string, body: string, route?: string }) {
-    // 1. Guardar la notificación en la base de datos
+   async createAndSend(payload: { userId: string, title: string, body: string, route?: string }) {
+    // 1. Guardar la notificación en la base de datos (esta parte ya funciona)
     const notificacionGuardada = await new this.notificacionModel({
       usuario: payload.userId,
       titulo: payload.title,
@@ -33,16 +33,30 @@ export class NotificationsService {
       ruta: payload.route,
     }).save();
 
-    // 2. Enviar la notificación push
-    const targetUser = await this.usuarioModel.findById(payload.userId).select('fcmTokens');
-    if (targetUser && targetUser.fcmTokens.length > 0) {
-      const message: admin.messaging.MulticastMessage = {
-        tokens: targetUser.fcmTokens,
-        notification: { title: payload.title, body: payload.body },
-        data: { route: payload.route || '' }
-      };
-      await admin.messaging().sendEachForMulticast(message);
+    // --- INICIO DE LA MODIFICACIÓN ---
+    try {
+      // 2. Intentar enviar la notificación push
+      const targetUser = await this.usuarioModel.findById(payload.userId).select('fcmTokens');
+      
+      if (targetUser && targetUser.fcmTokens && targetUser.fcmTokens.length > 0) {
+        const message: admin.messaging.MulticastMessage = {
+          tokens: targetUser.fcmTokens,
+          notification: { title: payload.title, body: payload.body },
+          data: { route: payload.route || '' }
+        };
+        console.log(`[NotificationsService] Intentando enviar push a ${targetUser.fcmTokens.length} token(s).`);
+        await admin.messaging().sendEachForMulticast(message);
+        console.log(`[NotificationsService] Push enviado exitosamente.`);
+      } else {
+        console.log(`[NotificationsService] El usuario ${payload.userId} no tiene tokens FCM para enviar notificación push.`);
+      }
+    } catch (error) {
+      // 3. Si el envío push falla, lo capturamos y lo mostramos en los logs
+      console.error('[NotificationsService] ¡ERROR AL ENVIAR NOTIFICACIÓN PUSH!:', error);
+      // No relanzamos el error, para que la petición no falle con un 500.
     }
+    // --- FIN DE LA MODIFICACIÓN ---
+
     return notificacionGuardada;
   }
 
