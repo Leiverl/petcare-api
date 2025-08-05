@@ -1,12 +1,15 @@
-import { Controller, Get, Post, Delete, Param, UseGuards, Req, Body } from '@nestjs/common';
+import { Controller, Get, Post, Param, UseGuards, Req, Body } from '@nestjs/common';
 import { InteraccionesEventosService } from './interacciones-eventos.service';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { IsMongoId, IsNotEmpty } from 'class-validator'; // <-- IMPORT VALIDATORS
 
 // DTO para validar el body del POST
 class ToggleInteresDto {
+  @IsMongoId()      // <-- ADD VALIDATOR
+  @IsNotEmpty()     // <-- ADD VALIDATOR
   eventoId: string;
 }
 
@@ -17,13 +20,14 @@ class ToggleInteresDto {
 export class InteraccionesEventosController {
   constructor(private readonly interaccionesService: InteraccionesEventosService) {}
 
-  // --- ENDPOINT MODIFICADO ---
   @Post()
   @ApiOperation({ summary: 'Marcar o desmarcar interés en un evento (toggle)' })
   toggleInteres(@Body() toggleInteresDto: ToggleInteresDto, @Req() req) {
     return this.interaccionesService.toggleInteres(req.user.id, toggleInteresDto.eventoId);
   }
 
+  // ... (the rest of your controller methods are fine and do not need changes)
+  
   @Get('mis-eventos')
   @ApiOperation({ summary: 'Obtener los eventos de interés del usuario logueado' })
   getMisEventos(@Req() req) {
